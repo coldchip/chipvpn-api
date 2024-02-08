@@ -67,6 +67,13 @@ async function save(path) {
   });
 }
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "*");
+  res.header("Access-Control-Allow-Methods", "*");
+  next();
+});
+
 app.get('/', async (req, res) => {
   try {
     var devices = await Device.findAll({});
@@ -122,13 +129,6 @@ app.delete('/:id', async (req, res) => {
       error: e.toString()
     });
   }
-});
-
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "*");
-  res.header("Access-Control-Allow-Methods", "*");
-  next();
 });
 
 (async function() {
