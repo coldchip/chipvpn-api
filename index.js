@@ -25,7 +25,6 @@ function num2dot(int) {
 
 async function allocate() {
   var devices = await Device.findAll({});
-
   var allocated = devices.map((device) => device.address);
 
   var start = dot2num("10.128.0.2");
@@ -37,10 +36,10 @@ async function allocate() {
     }
   }
 
-  throw "IP Pool Exhausted";
+  throw new Error("IP Pool Exhausted");
 }
 
-async function generate(path) {
+async function save(path) {
   var lines = [];
   lines.push("section:device");
   lines.push(`network:10.128.0.1/16`);
@@ -70,7 +69,8 @@ async function generate(path) {
 
 app.get('/', async (req, res) => {
   try {
-    res.status(200).json({});
+    var devices = await Device.findAll({});
+    res.status(200).json(devices);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
@@ -86,12 +86,37 @@ app.get('/create', async (req, res) => {
       address: await allocate(),
     });
 
-    await generate("/etc/chipvpn/chipvpn.ini");
+    await save("/etc/chipvpn/chipvpn.ini");
 
     res.status(200).json({
+      id: device.id,
       address: device.address,
       key: device.key
     });
+  } catch(e) {
+    res.status(500).json({
+      error: e.toString()
+    });
+  }
+});
+
+app.delete('/:id', async (req, res) => {
+  try {
+    var success = await Device.destroy({
+      where: {
+        id: req.params.id
+      }
+    });
+
+    await save("/etc/chipvpn/chipvpn.ini");
+
+    if(success) {
+      res.status(200).json({});
+    } else {
+      res.status(404).json({
+        error: "Record not found"
+      });
+    }
   } catch(e) {
     res.status(500).json({
       error: e.toString()
