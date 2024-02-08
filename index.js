@@ -85,7 +85,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.get('/create', async (req, res) => {
+app.post('/', async (req, res) => {
   try {
     var device = await Device.create({
       title: "Device",
