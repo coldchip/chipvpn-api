@@ -16,6 +16,12 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		key: {
 			type: DataTypes.STRING
+		},
+		tx: {
+			type: DataTypes.INTEGER
+		},
+		rx: {
+			type: DataTypes.INTEGER
 		}
 	}, {
 		sequelize,
