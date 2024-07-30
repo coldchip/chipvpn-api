@@ -137,7 +137,7 @@ app.post('/', async (req, res) => {
   try {
     var device = await Device.create({
       title: "Device",
-      key: crypto.randomBytes(32).toString('base64'),
+      key: crypto.randomBytes(16).toString('hex'),
       address: await allocate(),
       tx: 0,
       rx: 0
