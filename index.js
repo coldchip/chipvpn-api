@@ -46,6 +46,7 @@ async function save(path) {
   lines.push(`bind:0.0.0.0:443`);
   lines.push(`mtu:1400`);
   lines.push(`xor:6Gk5dgBudKKffdBtWJX8bUeZ7o6V7kn5`);
+  lines.push("\n\n");
 
   let devices = await Device.findAll({});
   
@@ -56,6 +57,7 @@ async function save(path) {
     lines.push(`onconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=connect&tx=%tx%&rx=%rx%" &`);
     lines.push(`onping:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=ping&tx=%tx%&rx=%rx%" &`);
     lines.push(`ondisconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=disconnect&tx=%tx%&rx=%rx%" &`);
+    lines.push("\n\n");
   }
 
   var config = lines.map(e => e.trim()).join("\n").trim();
