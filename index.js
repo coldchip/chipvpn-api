@@ -9,6 +9,21 @@ const port = 3000;
 
 const Device = db.device;
 
+const config = {
+  address: "10.128.0.1",
+  prefix: 16,
+  mtu: 1400,
+  xor: "6Gk5dgBudKKffdBtWJX8bUeZ7o6V7kn5",
+  server: {
+    address: "3.0.7.3",
+    port: 443
+  },
+  bind: {
+    address: "0.0.0.0",
+    port: 443
+  }
+};
+
 function dot2num(dot) {
   var d = dot.split('.');
   return ((((((+d[0])*256)+(+d[1]))*256)+(+d[2]))*256)+(+d[3]);
@@ -23,15 +38,25 @@ function num2dot(int) {
   return part4 + "." + part3 + "." + part2 + "." + part1;
 }
 
+function cidr2subnet(bitCount) {
+  var mask = [], i, n;
+  for(i=0; i<4; i++) {
+    n = Math.min(bitCount, 8);
+    mask.push(256 - Math.pow(2, 8-n));
+    bitCount -= n;
+  }
+  return mask.join('.');
+}
+
 async function allocate() {
   var devices = await Device.findAll({});
   var allocated = devices.map((device) => device.address);
 
-  var start = dot2num("10.128.0.2");
-  var end = dot2num("10.128.255.255");
+  var start = dot2num(config.address) & dot2num(cidr2subnet(config.prefix));
+  var end   = dot2num(config.address) | (~dot2num(cidr2subnet(config.prefix)));
 
-  for(var i = start; i <= end; i++) {
-    if(!allocated.includes(num2dot(i))) {
+  for(var i = (start + 1); i <= (end - 1); i++) {
+    if(!allocated.includes(num2dot(i)) && i != dot2num(config.address)) {
       return num2dot(i);
     }
   }
@@ -42,10 +67,10 @@ async function allocate() {
 async function save(path) {
   var lines = [];
   lines.push("section:device");
-  lines.push(`network:10.128.0.1/16`);
-  lines.push(`bind:0.0.0.0:443`);
-  lines.push(`mtu:1400`);
-  lines.push(`xor:6Gk5dgBudKKffdBtWJX8bUeZ7o6V7kn5`);
+  lines.push(`network:${config.address}/${config.prefix}`);
+  lines.push(`bind:${config.bind.address}:${config.bind.port}`);
+  lines.push(`mtu:${config.mtu}`);
+  lines.push(`xor:${config.xor}`);
   lines.push("\n\n");
 
   let devices = await Device.findAll({});
@@ -60,10 +85,12 @@ async function save(path) {
     lines.push("\n\n");
   }
 
-  var config = lines.map(e => e.trim()).join("\n").trim();
+  var output = lines.map(e => e.trim()).join("\n").trim().concat('\n');
+
+  // console.log(output);
 
   await new Promise((resolve, reject) => {
-    fs.writeFile(path, config, function(err) {
+    fs.writeFile(path, output, function(err) {
       if(err) {
         reject(err);
         return;
@@ -148,8 +175,11 @@ app.post('/', async (req, res) => {
     await save("/etc/chipvpn/chipvpn.ini");
 
     res.status(200).json({
-      id: device.id,
       address: device.address,
+      prefix: config.prefix,
+      gateway: config.address,
+      mtu: config.mtu,
+      xor: config.xor,
       key: device.key
     });
   } catch(e) {
@@ -188,7 +218,7 @@ app.delete('/:id', async (req, res) => {
   await db.sequelize.sync();
 
   app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`ChipVPN API listening on port ${port}`)
   });
 
 
