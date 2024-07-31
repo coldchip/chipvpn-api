@@ -180,6 +180,8 @@ app.post('/', async (req, res) => {
       gateway: config.address,
       mtu: config.mtu,
       xor: config.xor,
+      server: config.server.address,
+      port: config.server.port,
       key: device.key
     });
   } catch(e) {
