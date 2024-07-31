@@ -13,7 +13,7 @@ const config = {
   address: "10.128.0.1",
   prefix: 16,
   mtu: 1400,
-  xor: "6Gk5dgBudKKffdBtWJX8bUeZ7o6V7kn5",
+  xor: "e513255a1ef40e61bf36a40a07936fce",
   server: {
     address: "3.0.7.3",
     port: 443
