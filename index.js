@@ -2,8 +2,11 @@ const fs = require("fs");
 const express = require('express');
 const db = require("./models");
 const crypto = require("crypto");
+const bodyParser = require("body-parser");
 
 const app = express();
+
+app.use(bodyParser.urlencoded({ extended: false }));
 
 const port = 3000;
 
@@ -12,7 +15,7 @@ const Device = db.device;
 const config = {
   address: "10.128.0.1",
   prefix: 16,
-  mtu: 1400,
+  mtu: 1470,
   xor: "e513255a1ef40e61bf36a40a07936fce",
   server: {
     address: "3.0.7.3",
