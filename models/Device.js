@@ -8,6 +8,12 @@ module.exports = (sequelize, DataTypes) => {
 	}
 	
 	Device.init({
+		ephemeral: {
+			type: DataTypes.BOOLEAN
+		},
+		expiry: {
+			type: DataTypes.INTEGER
+		},
 		title: {
 			type: DataTypes.STRING
 		},

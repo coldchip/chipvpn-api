@@ -1,6 +1,7 @@
 const fs = require("fs");
 const express = require('express');
 const db = require("./models");
+const { Op } = require('sequelize');
 const crypto = require("crypto");
 const bodyParser = require("body-parser");
 
@@ -15,10 +16,9 @@ const Device = db.device;
 const config = {
   address: "10.128.0.1",
   prefix: 16,
-  mtu: 1400,
-  xor: "e513255a1ef40e61bf36a40a07936fce",
+  mtu: 1420,
   server: {
-    address: "3.0.7.3",
+    address: "45.32.100.13",
     port: 443
   },
   bind: {
@@ -73,7 +73,6 @@ async function save(path) {
   lines.push(`network:${config.address}/${config.prefix}`);
   lines.push(`bind:${config.bind.address}:${config.bind.port}`);
   lines.push(`mtu:${config.mtu}`);
-  lines.push(`xor:${config.xor}`);
   lines.push("\n\n");
 
   let devices = await Device.findAll({});
@@ -167,7 +166,12 @@ app.get('/accounting', async (req, res) => {
 
 app.post('/', async (req, res) => {
   try {
+
+    let ephemeral = req.body.ephemeral;
+
     var device = await Device.create({
+      ephemeral: ephemeral ? true : false,
+      expiry: Math.floor(new Date().getTime() / 1000) + 120,
       title: "Device",
       key: crypto.randomBytes(16).toString('hex'),
       address: await allocate(),
@@ -182,7 +186,6 @@ app.post('/', async (req, res) => {
       prefix: config.prefix,
       gateway: config.address,
       mtu: config.mtu,
-      xor: config.xor,
       server: config.server.address,
       port: config.server.port,
       key: device.key
@@ -227,10 +230,19 @@ app.delete('/:id', async (req, res) => {
   });
 
 
-  // async function heartbeat() {
-  //   console.log(sessions);
-  //   setTimeout(heartbeat, 100);
-  // }
+  async function heartbeat() {
 
-  // heartbeat();
+    await Device.destroy({
+      where: {
+        ephemeral: true,
+        expiry: {
+          [Op.lt]: Math.floor(new Date().getTime() / 1000),          
+        }
+      }
+    });
+
+    setTimeout(heartbeat, 5000);
+  }
+
+  heartbeat();
 })();
