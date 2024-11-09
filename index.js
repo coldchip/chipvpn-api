@@ -138,7 +138,8 @@ app.get('/accounting', async (req, res) => {
       } 
     });
 
-    await Device.update({ 
+    await Device.update({
+      expiry: Math.floor(new Date().getTime() / 1000) + 120,
       tx: device.tx + dtx, 
       rx: device.rx + drx
     }, {
@@ -180,8 +181,6 @@ app.post('/', async (req, res) => {
       rx: 0
     });
 
-    await save("/etc/chipvpn/chipvpn.ini");
-
     res.status(200).json({
       address: device.address,
       prefix: config.prefix,
@@ -205,8 +204,6 @@ app.delete('/:id', async (req, res) => {
         id: req.params.id
       }
     });
-
-    await save("/etc/chipvpn/chipvpn.ini");
 
     if(success) {
       res.status(200).json({});
@@ -242,7 +239,9 @@ app.delete('/:id', async (req, res) => {
       }
     });
 
-    setTimeout(heartbeat, 5000);
+    await save("/etc/chipvpn/chipvpn.ini");
+
+    setTimeout(heartbeat, 1000);
   }
 
   heartbeat();
