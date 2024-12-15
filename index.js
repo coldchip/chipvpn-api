@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const port = 3000;
 
 const Device = db.device;
+const Log = db.log;
 
 const config = {
   address: "10.128.0.1",
@@ -125,45 +126,30 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/accounting', async (req, res) => {
-  if(sessions[req.query.id]) {
-    var dtx = parseInt(req.query.tx) - sessions[req.query.id].tx;
-    var drx = parseInt(req.query.rx) - sessions[req.query.id].rx;
+  var tx = parseInt(req.query.tx);
+  var rx = parseInt(req.query.rx);
 
-    sessions[req.query.id].tx += dtx;
-    sessions[req.query.id].rx += drx;
+  await Log.create({
+    deviceId: req.query.id,
+    type: req.query.action,
+    timestamp: Math.floor(new Date().getTime() / 1000),
+    tx: tx, 
+    rx: rx
+  });
 
-    var device = await Device.findOne({ 
-      where: { 
-        id: req.query.id
-      } 
-    });
+  res.status(200).json({});
+});
 
-    await Device.update({
-      expiry: Math.floor(new Date().getTime() / 1000) + 120,
-      tx: device.tx + dtx, 
-      rx: device.rx + drx
-    }, {
-      where: {
-        id: req.query.id,
-      },
-    });
-  }
-
-  switch(req.query.action) {
-    case "connect": {
-      sessions[req.query.id] = {
-        tx: 0,
-        rx: 0
-      };
+app.get('/log', async (req, res) => {
+  var logs = await Log.findAll({
+    where: {
+      timestamp: {
+        [Op.gt]: Math.floor(new Date().getTime() / 1000) - 86400,          
+      }
     }
-    break;
-    case "disconnect": {
-      delete sessions[req.query.id];
-    }
-    break;
-  }
+  });
 
-  res.status(200).json(device);
+  res.status(200).json(logs);
 });
 
 app.post('/', async (req, res) => {
@@ -176,9 +162,7 @@ app.post('/', async (req, res) => {
       expiry: Math.floor(new Date().getTime() / 1000) + 120,
       title: "Device",
       key: crypto.randomBytes(16).toString('hex'),
-      address: await allocate(),
-      tx: 0,
-      rx: 0
+      address: await allocate()
     });
 
     res.status(200).json({
