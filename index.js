@@ -152,6 +152,12 @@ app.get('/log', async (req, res) => {
   res.status(200).json(logs);
 });
 
+app.delete('/log', async (req, res) => {
+  await Log.destroy();
+
+  res.status(200).json({});
+});
+
 app.post('/', async (req, res) => {
   try {
 
