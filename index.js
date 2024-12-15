@@ -161,7 +161,7 @@ app.get('/log', async (req, res) => {
 });
 
 app.delete('/log', async (req, res) => {
-  await Log.destroy({});
+  await Log.truncate();
 
   res.status(200).json({});
 });
