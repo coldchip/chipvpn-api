@@ -129,6 +129,14 @@ app.get('/accounting', async (req, res) => {
   var tx = parseInt(req.query.tx);
   var rx = parseInt(req.query.rx);
 
+  await Device.update({
+    expiry: Math.floor(new Date().getTime() / 1000) + 120
+  }, {
+    where: {
+      id: req.query.id,
+    },
+  });
+
   await Log.create({
     deviceId: req.query.id,
     type: req.query.action,
