@@ -129,14 +129,6 @@ app.get('/accounting', async (req, res) => {
   var tx = parseInt(req.query.tx);
   var rx = parseInt(req.query.rx);
 
-  await Device.update({
-    expiry: Math.floor(new Date().getTime() / 1000) + 120
-  }, {
-    where: {
-      id: req.query.id,
-    },
-  });
-
   await Log.create({
     deviceId: req.query.id,
     type: req.query.action,
@@ -169,25 +161,53 @@ app.delete('/log', async (req, res) => {
 app.post('/', async (req, res) => {
   try {
 
-    let ephemeral = req.body.ephemeral;
+    let id        = req.body.id;
 
-    var device = await Device.create({
-      ephemeral: ephemeral ? true : false,
-      expiry: Math.floor(new Date().getTime() / 1000) + 120,
-      title: "Device",
-      key: crypto.randomBytes(16).toString('hex'),
-      address: await allocate()
-    });
+    if(id) {
 
-    res.status(200).json({
-      address: device.address,
-      prefix: config.prefix,
-      gateway: config.address,
-      mtu: config.mtu,
-      server: config.server.address,
-      port: config.server.port,
-      key: device.key
-    });
+      var device = await Device.findOne({
+        where: {
+          id: id
+        }
+      });
+
+      const params = {
+        id: id,
+        title: "Device",
+        key: crypto.randomBytes(16).toString('hex'),
+        address: await allocate()
+      };
+
+      if(device) {
+        await Device.update(params, {
+          where: {
+            id: id
+          }
+        });
+      } else {
+        await Device.create(params);
+      }
+
+      var device = await Device.findOne({
+        where: {
+          id: id
+        }
+      });
+
+      res.status(200).json({
+        address: device.address,
+        prefix: config.prefix,
+        gateway: config.address,
+        mtu: config.mtu,
+        server: config.server.address,
+        port: config.server.port,
+        key: device.key
+      });
+    } else {
+      res.status(400).json({
+        error: "missing params"
+      });
+    }
   } catch(e) {
     res.status(500).json({
       error: e.toString()
@@ -228,14 +248,14 @@ app.delete('/:id', async (req, res) => {
 
   async function heartbeat() {
 
-    await Device.destroy({
-      where: {
-        ephemeral: true,
-        expiry: {
-          [Op.lt]: Math.floor(new Date().getTime() / 1000),          
-        }
-      }
-    });
+    // await Device.destroy({
+    //   where: {
+    //     ephemeral: true,
+    //     expiry: {
+    //       [Op.lt]: Math.floor(new Date().getTime() / 1000),          
+    //     }
+    //   }
+    // });
 
     await save("/etc/chipvpn/chipvpn.ini");
 
