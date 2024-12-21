@@ -3,7 +3,7 @@ const db = require("./../models");
 const Token = db.token;
 
 async function auth(req, res, next) {
-	var token = req.headers.token ? req.headers.token : req.query.token;
+	var token = req.headers.authorization ? req.headers.authorization : req.query.authorization;
 
 	if(token) {
 		let result = await Token.findOne({ 
@@ -15,16 +15,12 @@ async function auth(req, res, next) {
 		if(result) {
 			req.token = result;
 			return next();
-		} else {
-			return res.status(401).json({
-				message: "Unauthorized"
-			});
 		}
-	} else {
-		return res.status(401).json({
-			message: "Unauthorized"
-		});
-	}
+	} 
+	
+	return res.status(401).json({
+		message: "unauthorized"
+	});
 
 }
 
