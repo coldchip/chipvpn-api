@@ -4,6 +4,7 @@ const db = require("./models");
 const { Op } = require('sequelize');
 const crypto = require("crypto");
 const bodyParser = require("body-parser");
+const auth = require("./middleware/auth");
 
 const app = express();
 
@@ -12,15 +13,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 const port = 3000;
 
+const Token = db.token;
 const Device = db.device;
-const Log = db.log;
 
 const config = {
   address: "10.128.0.1",
   prefix: 16,
   mtu: 1420,
   server: {
-    address: "45.32.100.13",
+    address: "172.104.50.78",
     port: 443
   },
   bind: {
@@ -113,9 +114,13 @@ app.use(function(req, res, next) {
 
 var sessions = {};
 
-app.get('/', async (req, res) => {
+app.get('/', auth, async (req, res) => {
   try {
-    var devices = await Device.findAll({});
+    var devices = await Device.findAll({
+      where: {
+        tokenId: req.token.id
+      }
+    });
 
     res.status(200).json(devices);
   } catch(e) {
@@ -129,85 +134,32 @@ app.get('/accounting', async (req, res) => {
   var tx = parseInt(req.query.tx);
   var rx = parseInt(req.query.rx);
 
-  await Log.create({
-    deviceId: req.query.id,
-    type: req.query.action,
-    timestamp: Math.floor(new Date().getTime() / 1000),
-    tx: tx, 
-    rx: rx
-  });
-
   res.status(200).json({});
 });
 
-app.get('/log', async (req, res) => {
-  var logs = await Log.findAll({
-    where: {
-      timestamp: {
-        [Op.gt]: Math.floor(new Date().getTime() / 1000) - 86400,          
-      }
-    }
-  });
-
-  res.status(200).json(logs);
-});
-
-app.delete('/log', async (req, res) => {
-  await Log.truncate();
-
-  res.status(200).json({});
-});
-
-app.post('/', async (req, res) => {
+app.post('/', auth, async (req, res) => {
   try {
-
-    let id        = req.body.id;
-
-    if(id) {
-
-      var device = await Device.findOne({
-        where: {
-          id: id
-        }
-      });
-
-      const params = {
-        id: id,
-        title: "Device",
-        key: crypto.randomBytes(16).toString('hex'),
-        address: await allocate()
-      };
-
-      if(device) {
-        await Device.update(params, {
-          where: {
-            id: id
-          }
-        });
-      } else {
-        await Device.create(params);
+    await Device.destroy({
+      where: {
+        tokenId: req.token.id
       }
-
-      var device = await Device.findOne({
-        where: {
-          id: id
-        }
-      });
-
-      res.status(200).json({
-        address: device.address,
-        prefix: config.prefix,
-        gateway: config.address,
-        mtu: config.mtu,
-        server: config.server.address,
-        port: config.server.port,
-        key: device.key
-      });
-    } else {
-      res.status(400).json({
-        error: "missing params"
-      });
-    }
+    });
+    
+    var device = await Device.create({
+      key: crypto.randomBytes(16).toString('hex'),
+      address: await allocate(),
+      tokenId: req.token.id
+    });
+    
+    res.status(200).json({
+      address: device.address,
+      prefix: config.prefix,
+      gateway: config.address,
+      mtu: config.mtu,
+      server: config.server.address,
+      port: config.server.port,
+      key: device.key
+    });
   } catch(e) {
     res.status(500).json({
       error: e.toString()
@@ -215,11 +167,12 @@ app.post('/', async (req, res) => {
   }
 });
 
-app.delete('/:id', async (req, res) => {
+app.delete('/:id', auth, async (req, res) => {
   try {
     var success = await Device.destroy({
       where: {
-        id: req.params.id
+        id: req.params.id,
+        tokenId: req.token.id
       }
     });
 
@@ -245,6 +198,23 @@ app.delete('/:id', async (req, res) => {
     console.log(`ChipVPN API listening on port ${port}`)
   });
 
+  await Token.findOrCreate({
+    where: {
+      id: "ryan888000"
+    },
+    defaults: {
+      id: "ryan888000"
+    }
+  });
+
+  await Token.findOrCreate({
+    where: {
+      id: "ryan888001"
+    },
+    defaults: {
+      id: "ryan888001"
+    }
+  });
 
   async function heartbeat() {
 
