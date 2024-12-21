@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require("fs");
 const express = require('express');
 const db = require("./models");
@@ -21,8 +22,8 @@ const config = {
   prefix: 16,
   mtu: 1420,
   server: {
-    address: "172.104.50.78",
-    port: 443
+    address: process.env.address ? process.env.address : "127.0.0.1",
+    port: process.env.port ? parseInt(process.env.port) : 443
   },
   bind: {
     address: "0.0.0.0",
@@ -67,7 +68,7 @@ async function allocate() {
     }
   }
 
-  throw new Error("IP Pool Exhausted");
+  throw new Error("ip pool exhausted");
 }
 
 async function save(path) {
@@ -84,9 +85,9 @@ async function save(path) {
     lines.push("section:peer");
     lines.push(`key:${device.key}`);
     lines.push(`allow:${device.address}/32`);
-    lines.push(`onconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=connect&tx=%tx%&rx=%rx%" &`);
-    lines.push(`onping:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=ping&tx=%tx%&rx=%rx%" &`);
-    lines.push(`ondisconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=disconnect&tx=%tx%&rx=%rx%" &`);
+    // lines.push(`onconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=connect&tx=%tx%&rx=%rx%" &`);
+    // lines.push(`onping:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=ping&tx=%tx%&rx=%rx%" &`);
+    // lines.push(`ondisconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=disconnect&tx=%tx%&rx=%rx%" &`);
     lines.push("\n\n");
   }
 
@@ -112,9 +113,11 @@ app.use(function(req, res, next) {
   next();
 });
 
-var sessions = {};
+app.get('/', async (req, res) => {
+  res.status(200).json({});
+});
 
-app.get('/', auth, async (req, res) => {
+app.get('/session/', auth, async (req, res) => {
   try {
     var devices = await Device.findAll({
       where: {
@@ -130,14 +133,14 @@ app.get('/', auth, async (req, res) => {
   }
 });
 
-app.get('/accounting', async (req, res) => {
-  var tx = parseInt(req.query.tx);
-  var rx = parseInt(req.query.rx);
+// app.get('/accounting', async (req, res) => {
+//   var tx = parseInt(req.query.tx);
+//   var rx = parseInt(req.query.rx);
 
-  res.status(200).json({});
-});
+//   res.status(200).json({});
+// });
 
-app.post('/', auth, async (req, res) => {
+app.post('/session/', auth, async (req, res) => {
   try {
     await Device.destroy({
       where: {
@@ -167,7 +170,7 @@ app.post('/', auth, async (req, res) => {
   }
 });
 
-app.delete('/:id', auth, async (req, res) => {
+app.delete('/session/:id', auth, async (req, res) => {
   try {
     var success = await Device.destroy({
       where: {
