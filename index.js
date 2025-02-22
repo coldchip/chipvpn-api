@@ -201,7 +201,7 @@ app.delete('/session/:id', auth, async (req, res) => {
     console.log(`ChipVPN API listening on port ${port}`)
   });
 
-  for(let i = 0; i < 9; i++) {}
+  for(let i = 0; i < 9; i++) {
     await Token.findOrCreate({
       where: {
         id: "ryan88800" + i.toString()
