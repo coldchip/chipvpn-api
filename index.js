@@ -125,6 +125,12 @@ app.get('/session/', auth, async (req, res) => {
       }
     });
 
+    devices.temp = [];
+
+    for(var device of devices) {
+      devices.temp.push("hello");
+    }
+
     res.status(200).json(devices);
   } catch(e) {
     res.status(500).json({
@@ -163,18 +169,6 @@ app.post('/session/', auth, async (req, res) => {
       port: config.server.port,
       key: device.key
     });
-  } catch(e) {
-    res.status(500).json({
-      error: e.toString()
-    });
-  }
-});
-
-app.get('/coordination/', async (req, res) => {
-  try {
-    var device = await Device.findAll();
-    
-    res.status(200).json(device);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
