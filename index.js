@@ -207,6 +207,7 @@ app.get('/coordination/', auth, async (req, res) => {
 
       node.address = peer.sessionAddress;
       node.port = peer.sessionPort;
+      delete node.mapping;
     }
     
     res.status(200).json(nodes);
