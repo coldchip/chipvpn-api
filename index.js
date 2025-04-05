@@ -172,7 +172,7 @@ app.post('/session/', auth, async (req, res) => {
 
 app.post('/coordination/', async (req, res) => {
   try {
-    var device = await Device.findOne({ 
+    var device = await Device.update({ 
         sessionAddress: req.query.address,
         sessionPort: req.query.port
     }, {
@@ -181,15 +181,7 @@ app.post('/coordination/', async (req, res) => {
       }
     });
     
-    res.status(200).json({
-      address: device.address,
-      prefix: config.prefix,
-      gateway: config.address,
-      mtu: config.mtu,
-      server: config.server.address,
-      port: config.server.port,
-      key: device.key
-    });
+    res.status(200).json({});
   } catch(e) {
     res.status(500).json({
       error: e.toString()
