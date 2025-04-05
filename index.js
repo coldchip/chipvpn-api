@@ -181,11 +181,15 @@ app.get('/coordination/', async (req, res) => {
         const node1 = devices[i];
         const node2 = devices[j];
 
-        connections.push(`${node1.id}<->${node2.id}`);
+        connections.push({
+          id: node1.id,
+          remote: node2.id,
+          key: crypto.randomBytes(16).toString('hex')
+        });
       }
     }
     
-    res.status(200).json([devices, connections]);
+    res.status(200).json(connections);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
