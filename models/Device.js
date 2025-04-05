@@ -13,6 +13,12 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		key: {
 			type: DataTypes.STRING
+		},
+		sessionAddress: {
+			type: DataTypes.STRING
+		},
+		sessionPort: {
+			type: DataTypes.INTEGER
 		}
 	}, {
 		sequelize,
