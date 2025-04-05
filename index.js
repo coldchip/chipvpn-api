@@ -170,6 +170,18 @@ app.post('/session/', auth, async (req, res) => {
   }
 });
 
+app.get('/coordination/', async (req, res) => {
+  try {
+    var device = await Device.findAll();
+    
+    res.status(200).json(device);
+  } catch(e) {
+    res.status(500).json({
+      error: e.toString()
+    });
+  }
+});
+
 app.post('/coordination/', async (req, res) => {
   try {
     var device = await Device.update({ 
