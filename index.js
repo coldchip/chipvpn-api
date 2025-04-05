@@ -185,7 +185,7 @@ app.get('/coordination/', async (req, res) => {
       }
     }
     
-    res.status(200).json(connections);
+    res.status(200).json([devices, connections]);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
