@@ -164,8 +164,7 @@ app.post('/session/', auth, async (req, res) => {
         const node2 = devices[j];
 
         mesh.push({
-          id: node1.id,
-          remote: node2.id,
+          mapping: [node1.id, node2.id],
           key: crypto.randomBytes(16).toString('hex')
         });
       }
