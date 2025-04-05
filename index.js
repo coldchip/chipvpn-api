@@ -172,15 +172,13 @@ app.post('/session/', auth, async (req, res) => {
 
 app.post('/coordination/', async (req, res) => {
   try {
-    var device = await Device.findOne({
-      { 
+    var device = await Device.findOne({ 
         sessionAddress: req.query.address,
         sessionPort: req.query.port
-      }, {
-        where: {
-          id: req.query.id
-        }
-      },
+    }, {
+      where: {
+        id: req.query.id
+      }
     });
     
     res.status(200).json({
