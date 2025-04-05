@@ -85,9 +85,9 @@ async function save(path) {
     lines.push("section:peer");
     lines.push(`key:${device.key}`);
     lines.push(`allow:${device.address}/32`);
-    // lines.push(`onconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=connect&tx=%tx%&rx=%rx%" &`);
+    lines.push(`onconnect:curl -X GET "http://127.0.0.1:${port}/coordination/?id=${device.id}&action=connect&address=%paddr%&port=%pport%" &`);
     // lines.push(`onping:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=ping&tx=%tx%&rx=%rx%" &`);
-    // lines.push(`ondisconnect:curl -X GET "http://127.0.0.1:${port}/accounting/?id=${device.id}&action=disconnect&tx=%tx%&rx=%rx%" &`);
+    lines.push(`ondisconnect:curl -X GET "http://127.0.0.1:${port}/coordination/?id=${device.id}&action=disconnect&address=%paddr%&port=%pport%" &`);
     lines.push("\n\n");
   }
 
