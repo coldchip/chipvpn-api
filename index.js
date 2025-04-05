@@ -210,8 +210,10 @@ app.get('/coordination/', auth, async (req, res) => {
 
       if(req.headers.route === peer.token.id) {
         node.allow = `0.0.0.0/32`;
+        node.route = true;
       } else {
         node.allow = `${peer.address}/32`;
+        node.route = false;
       }
       node.address = peer.sessionAddress;
       node.port = peer.sessionPort;
