@@ -195,9 +195,17 @@ app.get('/coordination/', auth, async (req, res) => {
       }
     });
 
-    var node = mesh.filter((connection) => connection.mapping.includes(device.id));
+    var nodes = mesh.filter((node) => node.mapping.includes(device.id));
+    for(let node of nodes) {
+      // var device = await Device.findOne({
+      //   where: {
+      //     tokenId: req.token.id
+      //   }
+      // });
+      node.notMe = node.mapping.filter((map) => map != req.token.id);
+    }
     
-    res.status(200).json(node);
+    res.status(200).json(nodes);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
