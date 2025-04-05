@@ -204,7 +204,11 @@ app.get('/coordination/', auth, async (req, res) => {
         }
       });
 
-      node.allow = `${peer.address}/32`;
+      if(req.headers.route) {
+        node.allow = `0.0.0.0/32`;
+      } else {
+        node.allow = `${peer.address}/32`;
+      }
       node.address = peer.sessionAddress;
       node.port = peer.sessionPort;
     }
