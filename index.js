@@ -209,7 +209,7 @@ app.get('/coordination/', auth, async (req, res) => {
       });
 
       if(req.headers.route === peer.token.id) {
-        node.allow = `0.0.0.0/32`;
+        node.allow = `0.0.0.0/0`;
         node.route = true;
       } else {
         node.allow = `${peer.address}/32`;
