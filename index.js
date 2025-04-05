@@ -186,10 +186,18 @@ app.post('/session/', auth, async (req, res) => {
   }
 });
 
-app.get('/coordination/', async (req, res) => {
+app.get('/coordination/', auth, async (req, res) => {
   try {
+
+    var device = await Device.findOne({
+      where: {
+        tokenId: req.token.id
+      }
+    });
+
+    var node = mesh.filter((connection) => connection.mapping.includes(device.id));
     
-    res.status(200).json(mesh);
+    res.status(200).json(node);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
