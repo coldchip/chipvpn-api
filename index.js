@@ -125,11 +125,11 @@ app.get('/session/', auth, async (req, res) => {
       }
     });
 
-    // devices.temp = [];
+    devices.temp = [];
 
-    // for(var device of devices) {
-    //   devices.temp.push("hello");
-    // }
+    for(var device of devices) {
+      devices.temp.push("hello");
+    }
 
     res.status(200).json(devices);
   } catch(e) {
