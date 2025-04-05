@@ -202,7 +202,7 @@ app.get('/coordination/', auth, async (req, res) => {
       //     tokenId: req.token.id
       //   }
       // });
-      node.notMe = node.mapping.filter((map) => map == parseInt(req.token.id));
+      node.notMe = node.mapping.filter((map) => map != device.id);
     }
     
     res.status(200).json(nodes);
