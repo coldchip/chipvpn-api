@@ -201,10 +201,14 @@ app.get('/coordination/', auth, async (req, res) => {
       var peer = await Device.findOne({
         where: {
           id: peerId
-        }
+        },
+        include: [{
+          model: Token,
+          required: true
+        }]
       });
 
-      if(req.headers.route) {
+      if(req.headers.route === peer.to) {
         node.allow = `0.0.0.0/32`;
       } else {
         node.allow = `${peer.address}/32`;
