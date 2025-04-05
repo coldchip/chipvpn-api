@@ -178,8 +178,8 @@ app.get('/coordination/', async (req, res) => {
 
     for (let i = 0; i < devices.length; i++) {
       for (let j = i + 1; j < devices.length; j++) {
-        const node1 = nodes[i];
-        const node2 = nodes[j];
+        const node1 = devices[i];
+        const node2 = devices[j];
 
         connections.push(`${node1.id}<->${node2.id}`);
       }
