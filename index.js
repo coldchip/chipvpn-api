@@ -197,12 +197,16 @@ app.get('/coordination/', auth, async (req, res) => {
 
     var nodes = mesh.filter((node) => node.mapping.includes(device.id));
     for(let node of nodes) {
-      // var device = await Device.findOne({
-      //   where: {
-      //     tokenId: req.token.id
-      //   }
-      // });
-      node.notMe = node.mapping.find((map) => map != device.id);
+      var peerId = node.mapping.find((map) => map != device.id);
+
+      var peer = await Device.findOne({
+        where: {
+          id: peerId
+        }
+      });
+
+      node.address = peer.sessionAddress;
+      node.port = peer.sessionPort;
     }
     
     res.status(200).json(nodes);
