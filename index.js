@@ -140,6 +140,8 @@ app.get('/session/', auth, async (req, res) => {
 //   res.status(200).json({});
 // });
 
+var mesh = [];
+
 app.post('/session/', auth, async (req, res) => {
   try {
     await Device.destroy({
@@ -153,6 +155,21 @@ app.post('/session/', auth, async (req, res) => {
       address: await allocate(),
       tokenId: req.token.id
     });
+
+    mesh = [];
+    var devices = await Device.findAll();
+    for (let i = 0; i < devices.length; i++) {
+      for (let j = i + 1; j < devices.length; j++) {
+        const node1 = devices[i];
+        const node2 = devices[j];
+
+        mesh.push({
+          id: node1.id,
+          remote: node2.id,
+          key: crypto.randomBytes(16).toString('hex')
+        });
+      }
+    }
     
     res.status(200).json({
       address: device.address,
@@ -172,24 +189,8 @@ app.post('/session/', auth, async (req, res) => {
 
 app.get('/coordination/', async (req, res) => {
   try {
-    var devices = await Device.findAll();
-
-    var connections = [];
-
-    for (let i = 0; i < devices.length; i++) {
-      for (let j = i + 1; j < devices.length; j++) {
-        const node1 = devices[i];
-        const node2 = devices[j];
-
-        connections.push({
-          id: node1.id,
-          remote: node2.id,
-          key: crypto.randomBytes(16).toString('hex')
-        });
-      }
-    }
     
-    res.status(200).json(connections);
+    res.status(200).json(mesh);
   } catch(e) {
     res.status(500).json({
       error: e.toString()
