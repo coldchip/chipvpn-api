@@ -20,7 +20,7 @@ const Device = db.device;
 const config = {
   address: "10.128.0.1",
   prefix: 16,
-  mtu: 1370,
+  mtu: 1280,
   server: {
     address: process.env.address ? process.env.address : "127.0.0.1",
     port: process.env.port ? parseInt(process.env.port) : 443
